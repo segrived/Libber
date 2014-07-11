@@ -1,0 +1,109 @@
+﻿<Window x:Class="Libber.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:conv="clr-namespace:Libber.Converters"
+        Title="Libber - Book Manager" 
+        WindowStartupLocation="CenterScreen"
+        ResizeMode="CanResizeWithGrip"
+        Height="540" Width="997.09"
+        >
+
+    <Window.Resources>
+        <conv:ListToStringConverter x:Key="ListToStringConverter"></conv:ListToStringConverter>
+        <ContextMenu x:Key="BookListRowMenu">
+            <MenuItem Header="Open with PDF viewer" FontWeight="Bold" Click="OpenBookFileWithViewer" />
+            <MenuItem Header="Show table of contents" Click="ShowBookContents" />
+            <MenuItem Header="Edit information" Click="OpenEditBookInformationForm" />
+            <MenuItem Header="Remove from database" Click="RemoveBookFromDatabase" />
+        </ContextMenu>
+    </Window.Resources>
+
+    <Grid Loaded="Grid_Loaded">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="550*"/>
+            <ColumnDefinition Width="439*"/>
+        </Grid.ColumnDefinitions>
+
+        <Menu IsMainMenu="True" Background="White" x:Name="MainMenu" Padding="5,3,0,0">
+            <MenuItem Header="File">
+                <MenuItem Header="Unprocessed books" Click="OpenUnprocessedBooksForm" />
+                <MenuItem Header="Exit" Click="ExitApplication" />
+            </MenuItem>
+            <MenuItem Header="Refresh" Click="UpdateBookList" />
+        </Menu>
+
+        <GridSplitter Grid.Column="0" Grid.RowSpan="1" Width="5" ResizeDirection="Auto" 
+            HorizontalAlignment="Right" VerticalAlignment="Stretch"
+            Background="Transparent"
+        />
+
+        <GridSplitter Grid.Column="1" Grid.RowSpan="1" Width="5" ResizeDirection="Auto" 
+            HorizontalAlignment="Left" VerticalAlignment="Stretch"
+            Background="Transparent"
+        />
+
+        <Grid Column="1" Margin="10,7,10,10" Height="Auto" VerticalAlignment="Stretch">
+            <FlowDocumentScrollViewer BorderThickness="1" BorderBrush="Silver" Padding="0" x:Name="BookDescriptionScrollViewer">
+                <FlowDocument x:Name="SelectedBookDescription" FontFamily="Segoe UI" FontSize="12" PagePadding="8"
+                    IsOptimalParagraphEnabled="True" />
+            </FlowDocumentScrollViewer>
+        </Grid>
+
+        <Grid Column="0" Margin="10,7,10,10">
+            <DataGrid x:Name="BooksList" AutoGenerateColumns="False"
+                ItemsSource="{Binding Books}" IsReadOnly="True" SelectionMode="Single"
+                SelectionChanged="BooksList_SelectionChanged" RowHeaderWidth="0"
+                CanUserSortColumns="True" CanUserReorderColumns="True" VerticalContentAlignment="Center" SelectionUnit="FullRow"
+                RowDetailsVisibilityMode="Collapsed" GridLinesVisibility="None" Margin="0,20,0,31" CellStyle="{StaticResource DataGridDefaultStyle}">
+
+                <DataGrid.Resources>
+                    <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" Color="LightGreen" Opacity="0.5" />
+                    <SolidColorBrush x:Key="{x:Static SystemColors.HighlightTextBrushKey}" Color="#000000"/>
+                </DataGrid.Resources>
+
+                <DataGrid.RowStyle>
+                    <Style TargetType="DataGridRow">
+                        <EventSetter Event="MouseDoubleClick" Handler="OpenBookFileWithViewer" />
+                        <Setter Property="ContextMenu" Value="{StaticResource BookListRowMenu}" />
+                    </Style>
+                </DataGrid.RowStyle>
+
+                <DataGrid.Columns>
+                    <DataGridTemplateColumn Width="SizeToCells" IsReadOnly="True">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <Button Style="{StaticResource NoChromeButton}" Click="AddToFavorites" >
+                                    <Image Style="{StaticResource FavIcon}" Cursor="Hand" />
+                                </Button>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                    <DataGridTemplateColumn Header="Title" Width="*" SortMemberPath="Title">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <StackPanel HorizontalAlignment="Left">
+                                    <TextBlock Text="{Binding Path=Title}" FontWeight="Bold" />
+                                    <TextBlock FontSize="10" Foreground="DarkGreen">
+                                        <TextBlock.Text>
+                                            <MultiBinding StringFormat="Publisher: {0} | Authors: {1}">
+                                                <Binding Path="Publisher" />
+                                                <Binding Path="Authors" Converter="{StaticResource ListToStringConverter}" />
+                                            </MultiBinding>
+                                        </TextBlock.Text>
+                                    </TextBlock>
+                                </StackPanel>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                    <DataGridTextColumn Header="Ed" Width="30" Binding="{Binding Path=Edition}" Foreground="#444444" FontWeight="Bold" />
+                    <DataGridTextColumn Header="Year" Width="40" Binding="{Binding Path=Year}" Foreground="#444444" />
+                    <DataGridTextColumn Header="Pages" Width="40" Binding="{Binding Path=PageCount}" Foreground="#444444" />
+                </DataGrid.Columns>
+            </DataGrid>
+            <TextBox x:Name="SearchRequest" TextWrapping="Wrap" VerticalContentAlignment="Center"
+            	Style="{StaticResource SearchHintTextBox}" Padding="5,0,0,0"
+            	KeyDown="SearchRequest_KeyDown" Height="26" VerticalAlignment="Bottom"
+            />
+        </Grid>
+    </Grid>
+</Window>
