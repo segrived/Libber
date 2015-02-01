@@ -36,10 +36,12 @@ namespace Libber
         private Task<List<FileInfo>> LoadFiles()
         {
             var dir = (string)Config.Default.BooksDirectory;
-            return Task.Run(() => Directory
-                .EnumerateFiles(dir, "*.*", SearchOption.AllDirectories)
-                .Select(fn => new FileInfo(fn))
-                .OrderBy(fi => fi.Name).ToList());
+            return Task.Run(() => {
+                return Directory.EnumerateFiles(dir, "*.*", SearchOption.AllDirectories)
+                    .AsParallel()
+                    .Select(fn => new FileInfo(fn))
+                    .OrderBy(fi => fi.Name).ToList();
+            });
         }
 
         private Task<string> GetFileContents(string fileName)
